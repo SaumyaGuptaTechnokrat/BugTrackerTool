@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bug Addition</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .section {
+      max-width: 600px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 40px auto;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    label, input, select, textarea, button {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    .link {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .link a {
+      text-decoration: none;
+      color: #007bff;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .screenshot-preview {
+      max-width: 100px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section" id="loginSection">
+    <h2>🔐 Login</h2>
+    <label>Username</label>
+    <input type="text" id="loginUser" required>
+    <label>Password</label>
+    <input type="password" id="loginPass" required>
+    <button onclick="handleLogin()">Login</button>
+  </div>
+
+  <div class="section hidden" id="formSection">
+    <h2>➕ Add Bug</h2>
+    <form id="bugForm">
+      <input type="hidden" id="bugId">
+
+      <label>User</label>
+      <select id="user" required>
+        <option value="Alice">Alice</option>
+        <option value="Bob">Bob</option>
+        <option value="Charlie">Charlie</option>
+        <option value="Dave">Dave</option>
+      </select>
+
+      <label>Team</label>
+      <select id="team" required>
+        <option value="Frontend">Frontend</option>
+        <option value="Backend">Backend</option>
+        <option value="QA">QA</option>
+        <option value="DevOps">DevOps</option>
+      </select>
+
+      <label>Priority</label>
+      <select id="priority" required>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <label>Bug Title</label>
+      <input type="text" id="title" required>
+
+      <label>Test Steps</label>
+      <textarea id="steps" rows="2"></textarea>
+
+      <label>Expected Result</label>
+      <textarea id="expected" rows="2"></textarea>
+
+      <label>Actual Result</label>
+      <textarea id="actual" rows="2"></textarea>
+
+      <label>Screenshot (optional)</label>
+      <input type="file" id="screenshot" accept="image/*">
+
+      <button type="submit">Submit Bug</button>
+    </form>
+
+    <div class="link">
+      <a href="Bug_List.html">📋 View All Bug Tickets</a>
+    </div>
+  </div>
+
+<script>
+  const VALID_USER = "admin";
+  const VALID_PASS = "password123";
+
+  function handleLogin() {
+    const username = $("#loginUser").val().trim();
+    const password = $("#loginPass").val().trim();
+
+    if (username === VALID_USER && password === VALID_PASS) {
+      $("#loginSection").hide();
+      $("#formSection").removeClass("hidden");
+    } else {
+      alert("❌ Invalid credentials!");
+    }
+  }
+
+  let bugs = JSON.parse(localStorage.getItem("bugs")) || [];
+
+  function toBase64(file, callback) {
+    const reader = new FileReader();
+    reader.onloadend = () => callback(reader.result);
+    reader.readAsDataURL(file);
+  }
+
+  function resetForm() {
+    $("#bugForm")[0].reset();
+    $("#bugId").val("");
+  }
+
+  function saveBugsToStorage() {
+    localStorage.setItem("bugs", JSON.stringify(bugs));
+  }
+
+  $("#bugForm").submit(function (e) {
+    e.preventDefault();
+    const bug = {
+      user: $("#user").val(),
+      team: $("#team").val(),
+      priority: $("#priority").val(),
+      title: $("#title").val(),
+      steps: $("#steps").val(),
+      expected: $("#expected").val(),
+      actual: $("#actual").val(),
+      date: new Date().toLocaleDateString(),
+      screenshot: ""
+    };
+
+    const screenshotFile = $("#screenshot")[0].files[0];
+    if (screenshotFile) {
+      toBase64(screenshotFile, function (base64) {
+        bug.screenshot = base64;
+        bugs.push(bug);
+        saveBugsToStorage();
+        alert("✅ Bug submitted!");
+        resetForm();
+      });
+    } else {
+      bugs.push(bug);
+      saveBugsToStorage();
+      alert("✅ Bug submitted!");
+      resetForm();
+    }
+  });
+</script>
+</body>
+</html>
